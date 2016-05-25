@@ -1,0 +1,129 @@
+terminal linux command iptables 
+Chain INPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt in     out     source               destination
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt in     out     source               destination
+Chain OUTPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt in     out     source               destination
+ Chain INPUT (policy DROP 0 packets, 0 bytes)
+ pkts bytes target     prot opt in     out     source               destination
+    0     0 DROP       all  --  *      *       0.0.0.0/0            0.0.0.0/0           state INVALID
+  394 43586 ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0           state RELATED,ESTABLISHED
+   93 17292 ACCEPT     all  --  br0    *       0.0.0.0/0            0.0.0.0/0
+    1   142 ACCEPT     all  --  lo     *       0.0.0.0/0            0.0.0.0/0
+Chain FORWARD (policy DROP 0 packets, 0 bytes)
+ pkts bytes target     prot opt in     out     source               destination
+    0     0 ACCEPT     all  --  br0    br0     0.0.0.0/0            0.0.0.0/0
+    0     0 DROP       all  --  *      *       0.0.0.0/0            0.0.0.0/0           state INVALID
+    0     0 TCPMSS     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0           tcp flags:0x06/0x02 TCPMSS clamp to PMTU
+    0     0 ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0           state RELATED,ESTABLISHED
+    0     0 wanin      all  --  vlan2  *       0.0.0.0/0            0.0.0.0/0
+    0     0 wanout     all  --  *      vlan2   0.0.0.0/0            0.0.0.0/0
+    0     0 ACCEPT     all  --  br0    *       0.0.0.0/0            0.0.0.0/0
+Chain OUTPUT (policy ACCEPT 425 packets, 113K bytes)
+ pkts bytes target     prot opt in     out     source               destination
+Chain wanin (1 references)
+ pkts bytes target     prot opt in     out     source               destination
+Chain wanout (1 references)
+ pkts bytes target     prot opt in     out     source               destination
+ veiw role === iptables -n -L -v --line-numbers
+ output : 
+ Chain INPUT (policy DROP)
+num  target     prot opt source               destination
+1    DROP       all  --  0.0.0.0/0            0.0.0.0/0           state INVALID
+2    ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0           state RELATED,ESTABLISHED
+3    ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0
+4    ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0
+Chain FORWARD (policy DROP)
+num  target     prot opt source               destination
+1    ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0
+2    DROP       all  --  0.0.0.0/0            0.0.0.0/0           state INVALID
+3    TCPMSS     tcp  --  0.0.0.0/0            0.0.0.0/0           tcp flags:0x06/0x02 TCPMSS clamp to PMTU
+4    ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0           state RELATED,ESTABLISHED
+5    wanin      all  --  0.0.0.0/0            0.0.0.0/0
+6    wanout     all  --  0.0.0.0/0            0.0.0.0/0
+7    ACCEPT     all  --  0.0.0.0/0            0.0.0.0/0
+Chain OUTPUT (policy ACCEPT)
+num  target     prot opt source               destination
+Chain wanin (1 references)
+num  target     prot opt source               destination
+Chain wanout (1 references)
+num  target     prot opt source               destination
+******
+dietal command :
+L- : list role
+v- : veiw detial
+n- : print ip & port
+*******
+action iptable :
+service iptables stop
+service iptables start
+service iptables restart
+service iptables stop
+chkconfig iptables off
+*********************
+delect role iptable :
+iptables -L INPUT -n --line-numbers
+
+iptables -L OUTPUT -n --line-numbers
+
+iptables -L OUTPUT -n --line-numbers | less
+
+iptables -L OUTPUT -n --line-numbers | grep 202.54.1.1
+
+for delect role :
+iptables -D INPUT 4
+iptables -D INPUT -s 202.54.1.1 -j DROP
+********************
+Flush iptables:
+iptables -F
+iptables -t nat -F
+iptables -t mangle -F
+status iptable : 
+iptables -L -v -n
+**********************************
+command stop traffic Input&output :
+iptables -P INPUT DROP
+
+iptables -P OUTPUT DROP
+
+iptables -P FORWARD DROP
+***********************************
+stop IP in server :
+iptables -A INPUT -s 1.2.3.4 -j DROP
+iptables -A INPUT -s 192.168.0.0/24 -j DROP
+***********************************
+command stop traffic Input&output Port :
+iptables -A INPUT -p tcp --dport 80 -j DROP
+
+iptables -A INPUT -i eth1 -p tcp --dport 80 -j DROP
+
+iptables -A INPUT -p tcp -s 1.2.3.4 --dport 80 -j DROP
+********************************
+action stop output traffic : 
+iptables -A OUTPUT -d 1.2.3.4 -j DROP
+
+iptables -A OUTPUT -d 192.168.1.0/24 -j DROP
+
+iptables -A OUTPUT -o eth1 -d 192.168.1.0/24 -j DROP
+*****************************************
+action print LoG :
+iptables -A INPUT -i eth1 -s 10.0.0.0/8 -j LOG --log-prefix "IP_SPOOF A: "
+
+iptables -A INPUT -i eth1 -s 10.0.0.0/8 -j DROP
+veiw Log :
+tail -f /var/log/messages
+
+grep --color 'IP SPOOF' /var/log/messages
+*************************************************
+command open or stop port :
+netstat -tulpn
+netstat -tulpn | grep :80
+
+action port open :
+service httpd start
+*******************************************************
+Stop firewall : 
+service iptables stop
+chkconfig iptables off
+*********************************************
